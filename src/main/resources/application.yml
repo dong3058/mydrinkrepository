@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: drinks
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: hwangdonggeun70@gmail.com
+    password:
+
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+    auth-code-expiration-millis: 120  # 30 * 60 * 1000 == 30?
+  image:
+    default_src:
+  redis:
+    host: localhost
+    port: 6379
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: 1234
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+        highlight_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: create
+jwt:
+  signkey: N1Y8VjG7aKNHXbPR1Pqa6FIBo9S5oy3zGEP6ErJ1P5Ua
+  expiration: 3000
+
