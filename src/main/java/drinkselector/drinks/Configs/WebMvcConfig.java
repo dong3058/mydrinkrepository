@@ -26,7 +26,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     private final JwtCreators jwtProviders;
     private final CookieUtils cookieUtils;
-    private final MemberRepository memberRepository;
+
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("**")
@@ -49,12 +49,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new LoginInterCeptors(cookieUtils,jwtProviders))
+        /*registry.addInterceptor(new LoginInterCeptors(cookieUtils,jwtProviders))
                 .order(1)
                 .addPathPatterns("*");
         registry.addInterceptor(new UserAdminInterceptors(cookieUtils,jwtProviders,memberRepository))
                 .order(2)
-                .addPathPatterns("*");
+                .addPathPatterns("*");*/
     }
 
     @Override

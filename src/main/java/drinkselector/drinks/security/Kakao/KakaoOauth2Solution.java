@@ -6,11 +6,13 @@ import drinkselector.drinks.Entity.Member;
 import drinkselector.drinks.Etcs.Enums.MemberPlatForm;
 import drinkselector.drinks.Etcs.Enums.Oauth2Enum;
 import drinkselector.drinks.Etcs.Enums.UserAdmin;
+import drinkselector.drinks.Event.Events.Oauth2LogOutEvent;
 import drinkselector.drinks.Repository.MemberRepository;
 import drinkselector.drinks.security.Oauth2Solution;
 import drinkselector.drinks.security.details.Oauth2Detail;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.*;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
@@ -29,7 +31,7 @@ public class KakaoOauth2Solution implements Oauth2Solution {
 
 
     private final MemberRepository memberRepository;
-
+    private final ApplicationEventPublisher publisher;
     @Override
     public String Get_Access_Code(String query_str) {
 
@@ -111,14 +113,9 @@ public class KakaoOauth2Solution implements Oauth2Solution {
 
             }
 
-            HttpHeaders headers2=new HttpHeaders();
 
-            headers2.add("Authorization","Bearer %s".formatted(access_token));
-            headers2.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-            HttpEntity<String> entity2 = new HttpEntity<>(headers);
 
-            ResponseEntity<String> response2=restTemplate.exchange("https://kapi.kakao.com/v1/user/logout",HttpMethod.POST ,entity2, String.class);
-
+            publisher.publishEvent(new Oauth2LogOutEvent(access_token,Oauth2Enum.Kakao));
 
             return member.get();
 

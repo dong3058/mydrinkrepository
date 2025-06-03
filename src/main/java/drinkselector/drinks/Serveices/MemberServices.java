@@ -1,34 +1,30 @@
 package drinkselector.drinks.Serveices;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import drinkselector.drinks.Dtos.KakaoUserDataDto;
-import drinkselector.drinks.Dtos.Oauth2Dto;
-import drinkselector.drinks.Dtos.Show.RecentSearchShowDto;
 import drinkselector.drinks.Entity.Member;
 import drinkselector.drinks.Etcs.ApiResponseCreator;
 import drinkselector.drinks.Etcs.Cookie.CookieUtils;
-import drinkselector.drinks.Etcs.Enums.MemberPlatForm;
-import drinkselector.drinks.Etcs.Enums.StateEnum;
-import drinkselector.drinks.Etcs.Enums.UserAdmin;
+import drinkselector.drinks.Etcs.Enums.*;
 import drinkselector.drinks.Etcs.Exceptions.ExistAccountError;
 import drinkselector.drinks.Etcs.Jwts.Jwt;
 import drinkselector.drinks.Etcs.Jwts.JwtCreators;
-import drinkselector.drinks.Etcs.RedisUtill.ReCentSearchLog;
+import drinkselector.drinks.Etcs.RedisUtill.RedisOperationDto;
+import drinkselector.drinks.Etcs.RedisUtill.RedisUtills;
 import drinkselector.drinks.Repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.mindrot.jbcrypt.BCrypt;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MemberServices {
 
 
@@ -37,6 +33,7 @@ public class MemberServices {
     private final JwtCreators jwtProviders;
 
 
+    private final RedisUtills redisUtills;
     private final PasswordEncoder bCryptPasswordEncoder;
 
 
@@ -48,14 +45,14 @@ public class MemberServices {
     public ResponseEntity<ApiResponseCreator<String>> Id_Exist_Check(String mail){
         Optional<Member> member_exist=memberRepository.Check_User_Exist(mail);
 
-
+        log.info("멤버 존재여부:{}",member_exist.isPresent());
         if(member_exist.isPresent()){
 
             throw new ExistAccountError();
         }
 
 
-
+        log.info("에러발생?");
         return ResponseEntity.ok(ApiResponseCreator.success("성공",StateEnum.Success_Normally.getStates()));
 
 
@@ -63,16 +60,27 @@ public class MemberServices {
 
 
 
-    public ResponseEntity<ApiResponseCreator<String>> Member_Assign(String mail, String password){
+    public ResponseEntity<ApiResponseCreator<String>> Member_Assign(String mail, String password,String ip){
 
 
-        // String salt=BCrypt.gensalt();
+        Optional<Member> member_exist=memberRepository.Check_User_Exist(mail);
 
-        //String hashed_password=BCrypt.hashpw(password,salt);
+        if(member_exist.isPresent()){
+            throw new ExistAccountError();
+        }
 
         String hashed_password=bCryptPasswordEncoder.encode(password);
+        Member member;
+        UserAdmin userAdmin;
+        if(mail.equals("dong.3058@daum.net")){
+            member=new Member(mail,hashed_password, UserAdmin.ROLE_Admin, MemberPlatForm.Normal);
+            userAdmin=UserAdmin.ROLE_Admin;
+        }
+        else {
+            member = new Member(mail, hashed_password, UserAdmin.ROLE_User, MemberPlatForm.Normal);
 
-        Member member=new Member(mail,hashed_password, UserAdmin.ROLE_User, MemberPlatForm.Normal);
+            userAdmin=UserAdmin.ROLE_User;
+        }
         LocalDateTime now=LocalDateTime.now();
         member.setSign_in_date(now);
         member.setUpdate_date(now);
@@ -80,39 +88,59 @@ public class MemberServices {
         memberRepository.save(member);
 
 
+        List<RedisOperationDto> redisOperationDtos=new ArrayList<>();
+
+
+        redisOperationDtos.add(new RedisOperationDto(RedisOpEnum.HashSet, RedisKeyEnum.User_Login_Ip.getKey(),mail,ip));
+        redisOperationDtos.add(new RedisOperationDto(RedisOpEnum.HashSet, RedisKeyEnum.User_Login_Count.getKey(),mail,"0"));
+        redisOperationDtos.add(new RedisOperationDto(RedisOpEnum.HashSet,RedisKeyEnum.User_Admin.getKey(),String.valueOf(member.getMember_id()),userAdmin.name()));
+        redisUtills.Make_Redis_Pipeline(redisOperationDtos);
+
+        /*edisTemplate.executePipelined(new RedisCallback<Object>() {
+            @Override
+            public Object doInRedis(RedisConnection connection) throws DataAccessException {
+                StringRedisConnection stringRedisConnection=(StringRedisConnection) connection;
+
+                stringRedisConnection.hSetNX("user_login_ip",mail,ip);
+                stringRedisConnection.hSetNX("user_login_count",mail,"0");
+
+                return null;
+            }
+        });*/
+
+
+
 
         return ResponseEntity.ok(ApiResponseCreator.success("로그인성공", StateEnum.Success_Normally.getStates()));
 
     }
 
-    public Long Member_Login2(String mail, String password){
+    public Optional<Member> Member_Login2(String mail, String password){
 
         Optional<Member> member=memberRepository.Check_User_Exist(mail);
-        if(member.isPresent()&&member.get().memberPlatForm.name().equals("Normal")){
 
 
-            if(bCryptPasswordEncoder.matches(password,member.get().password)){
+        if(member.isPresent()){
 
+            if(bCryptPasswordEncoder.matches(password,member.get().getPassword())){
 
-                /*Jwt jwt=jwtProviders.gen_token(member.get().getMember_id());
-
-                HttpHeaders headers=cookieUtils.Make_Header_With_Cookie(jwt.getAccess_token());*/
-
-
-
-              return member.get().getMember_id();
+              return member;
 
             }
 
 
+            Optional<Member> member_for_fail=Optional.of(new Member(mail,"",UserAdmin.ROLE_User,MemberPlatForm.Normal));
+            return member_for_fail;
         }
+        else{
 
 
 
-        return null;
+        return member;
+        }
     }
 
-    public ResponseEntity<ApiResponseCreator<String>> Member_Login(String mail, String password){
+    public ResponseEntity<ApiResponseCreator<String>> Member_Login(String mail, String password,String ip){
 
         Optional<Member> member=memberRepository.Check_User_Exist(mail);
         if(member.isPresent()&&member.get().memberPlatForm.name().equals("Normal")){
@@ -143,60 +171,19 @@ public class MemberServices {
 
 
 
-    public ResponseEntity<ApiResponseCreator<String>> Oauth2Login(Oauth2Dto oauth2Dto){
 
-
-        RestTemplate restTemplate=new RestTemplate();
-
-
-        HttpHeaders headers=new HttpHeaders();
-
-        headers.add("Authorization","Bearer %s".formatted(oauth2Dto.getAccess_code()));
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-
-        ResponseEntity<KakaoUserDataDto> response=restTemplate.exchange("https://kapi.kakao.com/v1/oidc/userinfo",HttpMethod.GET,entity, KakaoUserDataDto.class);
-
-        if(response.getStatusCode().value()==200){
-            KakaoUserDataDto kakaoUserDataDto=response.getBody();
-
-            Optional<Member> member=memberRepository.Check_User_Exist(kakaoUserDataDto.getEmail());
-            if(member.isEmpty()){
-
-                Member member1=new Member(kakaoUserDataDto.getEmail(),"",UserAdmin.ROLE_User,MemberPlatForm.Kakao);
-                LocalDateTime now=LocalDateTime.now();
-                member1.setSign_in_date(now);
-                member1.setUpdate_date(now);
-                member=Optional.of(member1);
-            }
-            HttpHeaders headers2=new HttpHeaders();
-
-            headers2.add("Authorization","Bearer %s".formatted(oauth2Dto.getAccess_code()));
-            headers2.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-            HttpEntity<String> entity2 = new HttpEntity<>(headers);
-
-            ResponseEntity<String> response2=restTemplate.exchange("https://kapi.kakao.com/v1/user/logout",HttpMethod.POST ,entity2, String.class);
-
-
-
-            HttpHeaders login_header=cookieUtils.Make_Header_With_Cookie(jwtProviders.gen_token(member.get().getMember_id(),UserAdmin.ROLE_User).getAccess_token());
-
-            return new ResponseEntity<>(ApiResponseCreator.success("성공",StateEnum.Success_Normally.getStates()),login_header,HttpStatus.OK);
-        }
-        throw new RuntimeException();
-
-    }
 
     public ResponseEntity<ApiResponseCreator<String>> Update_Member_Password(Long member_id, String password){
 
 
         Optional<Member> member=memberRepository.findById(member_id);
 
+
+        log.info("값:{}",member.get().memberPlatForm.name());
         if(Check_Member_Social_Login(member.get())){
 
-
         member.get().setPassword(BCrypt.hashpw(password,BCrypt.gensalt()));
-
+        memberRepository.save(member.get());
 
         return new ResponseEntity<>(ApiResponseCreator.success("success",StateEnum.Success_Normally.getStates()),HttpStatus.OK
         );}

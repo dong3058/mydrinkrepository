@@ -19,12 +19,12 @@ public class ThumbNail {
 
     private Long drink_id;
 
-    private String thumb_path;
+    private String image_path;
 
     private String thumb_key;
 
     public ThumbNail(String thumb_path, String thumb_key) {
-        this.thumb_path = thumb_path;
+        this.image_path = thumb_path;
         this.thumb_key = thumb_key;
     }
 

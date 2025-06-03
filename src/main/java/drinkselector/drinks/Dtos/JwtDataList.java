@@ -2,6 +2,7 @@ package drinkselector.drinks.Dtos;
 
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 @Data
@@ -12,4 +13,5 @@ public class JwtDataList {
     private final Long member_id;
 
     private final String user_admin;
+
 }

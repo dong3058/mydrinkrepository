@@ -4,9 +4,11 @@ package drinkselector.drinks.Dtos;
 import drinkselector.drinks.Etcs.Enums.DrinkType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class DrinkDto {
 
 

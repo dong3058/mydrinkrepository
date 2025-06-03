@@ -13,7 +13,7 @@ import drinkselector.drinks.Etcs.ApiResponseCreator;
 import drinkselector.drinks.Etcs.Enums.DrinkType;
 import drinkselector.drinks.Etcs.Enums.StateEnum;
 import drinkselector.drinks.Etcs.PagingEntity;
-import drinkselector.drinks.Etcs.RedisUtill.ReCentSearchLog;
+import drinkselector.drinks.Etcs.RedisUtill.RedisUtills;
 import drinkselector.drinks.Event.Events.Update.DrinkUpdateEvent;
 import drinkselector.drinks.Event.Events.Save.DrinkUploadEvent;
 import drinkselector.drinks.Event.Events.RecentSearchLogEvent;
@@ -42,13 +42,16 @@ public class DrinkService {
 
     private final DrinkRepository drinkRepository;
     private final ApplicationEventPublisher publisher;
-    private final ObjectMapper objectMapper;
-    private final RedisTemplate<String,String> redisTemplate;
-    private final ReCentSearchLog reCentSearchLog;
+    private final RedisUtills redisUtills;
+
+
 
 
 
     public ResponseEntity<ApiResponseCreator<String>> Save_Drink_Info(DrinkSaveDto userMadeDescriptionDto, Long member_id){
+
+
+        //같은이름 문서 처리에있어서 어떻게 해야될지 고민좀해야될거같은대
 
         Drinks drinks=new Drinks(DrinkType.valueOf(userMadeDescriptionDto.getDrink_type()),userMadeDescriptionDto.getDrink_name());
         LocalDateTime now=LocalDateTime.now();
@@ -82,13 +85,10 @@ public class DrinkService {
 
     public ResponseEntity<ApiResponseCreator<List<RecentSearchShowDto>>> get_hot_issue(){
 
-
-        String work_id= UUID.randomUUID().toString();
-        publisher.publishEvent(new GetRecentSearchLongEvent(work_id));
+        GetRecentSearchLongEvent getRecentSearchLongEvent=new GetRecentSearchLongEvent();
+        publisher.publishEvent(getRecentSearchLongEvent);
         try {
-           List<RecentSearchShowDto> recentSearchDtos=objectMapper.readValue(redisTemplate.opsForValue().get(work_id), new TypeReference<List<RecentSearchShowDto>>() {
-            });
-
+           List<RecentSearchShowDto> recentSearchDtos=getRecentSearchLongEvent.getRecentSearchDtos();
             return ResponseEntity.ok(ApiResponseCreator.success(recentSearchDtos, StateEnum.Success_Normally.getStates()));
         }
         catch (Exception e){
@@ -102,17 +102,20 @@ public class DrinkService {
 
        Optional<DrinkDto> drinkDto= drinkRepository.Get_Drink_Info(drink_id);
 
-       publisher.publishEvent(new RecentSearchLogEvent(drink_id,drink_name));
+
 
        if(drinkDto.isPresent()){
 
            if(member_id!=null){
                publisher.publishEvent(new RecentSearchLogEvent(member_id,drink_id,drink_name));
 
-               Long size=redisTemplate.opsForSet().size("%s".formatted(drink_id));
+               Long size= redisUtills.RedisOpsSetStructureGetSizeOperation(String.valueOf(drink_id));
 
                drinkDto.get().setLike_number(size);
 
+           }
+           else{
+               publisher.publishEvent(new RecentSearchLogEvent(null,drink_id,drink_name));
            }
 
 
@@ -140,11 +143,15 @@ public class DrinkService {
 
 
 
-       Map.Entry<Object,Object> entry= redisTemplate.opsForHash().randomEntry("drink");
+       Map.Entry<Object,Object> entry= redisUtills.GetDrinkRandomEntry();
 
 
        Optional<DrinkDto> drink= drinkRepository.Get_Drink_Info((Long) entry.getValue());
 
+       Long size= redisUtills.RedisOpsSetStructureGetSizeOperation(String.valueOf(drink.get().getDrink_id()));
+
+
+       drink.get().setLike_number(size);
 
 
        return ResponseEntity.ok(ApiResponseCreator.success(drink.get(),StateEnum.Success_Normally.getStates()));
@@ -154,17 +161,17 @@ public class DrinkService {
 
 
 
-    public ResponseEntity<ApiResponseCreator<List<DrinkSearchShowDto>>> Get_Drink_By_Category(String category, PagingEntity pagingEntity){
+    public ResponseEntity<ApiResponseCreator<List<DrinkSearchShowDto>>> Get_Drink_By_Category(DrinkType category){
 
 
-        Pageable p= PageRequest.of(pagingEntity.getPage(),pagingEntity.getSize());
+        Pageable p= PageRequest.of(0,10);
 
 
-        Page<DrinkSearchShowDto> drinkSearchDtoPage=drinkRepository.Get_Drink_By_Category(p,category);
+        List<DrinkSearchShowDto> drinkSearchDtoPage=drinkRepository.Get_Drink_By_Category(p,category);
 
 
 
-        return ResponseEntity.ok(ApiResponseCreator.success(drinkSearchDtoPage.get().collect(Collectors.toList()), StateEnum.Success_Normally.getStates()));
+        return ResponseEntity.ok(ApiResponseCreator.success(drinkSearchDtoPage, StateEnum.Success_Normally.getStates()));
 
 
     }

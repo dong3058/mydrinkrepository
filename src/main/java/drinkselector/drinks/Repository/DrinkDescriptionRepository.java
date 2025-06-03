@@ -10,7 +10,7 @@ public interface DrinkDescriptionRepository extends JpaRepository<DrinkDescripti
 
 
     @Modifying
-    @Query("update DrinkDescription d set d.drink_description=:description where d.drink_id=:drink_id")
+    @Query("update DrinkDescription d set d.drink_description=:description where d.drink.drink_id=:drink_id")
     void update_drink_description(@Param(value="description") String description,@Param(value ="drink_id") Long drink_id);
 
 

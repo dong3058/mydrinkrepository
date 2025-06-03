@@ -3,24 +3,31 @@ package drinkselector.drinks.Etcs.Jwts;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import drinkselector.drinks.Dtos.JwtDataList;
+import drinkselector.drinks.Etcs.Enums.RedisOpEnum;
 import drinkselector.drinks.Etcs.Enums.UserAdmin;
 import drinkselector.drinks.Etcs.Exceptions.ReLoginError;
+import drinkselector.drinks.Etcs.RedisUtill.RedisOperationDto;
+import drinkselector.drinks.Etcs.RedisUtill.RedisUtills;
 import io.jsonwebtoken.*;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class JwtCreators {
 
 
@@ -34,6 +41,8 @@ public class JwtCreators {
 
     private final ObjectMapper objectMapper=new ObjectMapper();
 
+
+    private final RedisUtills redisUtills;
     private static SecretKeySpec encrypt_key;
 
 
@@ -41,10 +50,11 @@ public class JwtCreators {
         Long now=System.currentTimeMillis();
 
 
+
         String encrypt_member_id=Make_Encrypt_Member_id(member_id);
         String accesstoken=Jwts.builder()
                 .claim("member_id",encrypt_member_id)
-                .claim("role",userAdmin.name())
+
                 .setExpiration(new Date(now+expiration))
                 .setIssuedAt(new Date(now))
                 .signWith(SignatureAlgorithm.HS256,sign_key)
@@ -75,6 +85,9 @@ public class JwtCreators {
 
 
     public void Make_Encrypt_Key(String sign_key,byte [] salt){
+
+
+
         try {
             int count = 1000;
             int keyLength = 256;
@@ -97,6 +110,29 @@ public class JwtCreators {
     }
 
 
+    public String Make_Encrypt_Data(String data){
+
+
+        try {
+            Cipher cipher = Cipher.getInstance("AES");
+
+
+            cipher.init(Cipher.ENCRYPT_MODE, encrypt_key);
+            byte[] encryptedData = cipher.doFinal(data.getBytes());
+            return Base64.getEncoder().encodeToString(encryptedData);
+
+        }
+
+        catch (Exception e){
+            throw new RuntimeException();
+        }
+
+
+
+
+
+
+    }
     public String Make_Encrypt_Member_id(long Member_id){
 
 
@@ -154,25 +190,28 @@ public class JwtCreators {
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.DECRYPT_MODE, encrypt_key);
 
+            String[] tokenArr = token.split("\\.");
+            String payload = tokenArr[1];
+
+            String decodedPayload = new String(Base64.getDecoder().decode(payload), StandardCharsets.UTF_8);
+            Map<String, String> map = objectMapper.readValue(decodedPayload, Map.class);
+
+            log.info("map:{}",map);
+            //byte[] roleBytes = Base64.getDecoder().decode(map.get("role"));
+            byte[] memberIdBytes = Base64.getDecoder().decode(map.get("member_id"));
+
+            //String role = new String(cipher.doFinal(roleBytes), StandardCharsets.UTF_8);
 
 
-            String[] token_arr=token.split("\\.");
 
-            String payload=token_arr[1];
-            String decode_payload=new String(Base64.getDecoder().decode(payload));
+            String memberId = new String(cipher.doFinal(memberIdBytes), StandardCharsets.UTF_8);
+            log.info("meber_id:{}",memberId);
+            Optional<String> user_admin=redisUtills.RedisHashGetOperation("user_admin",memberId);
 
-            Map<String, String> map =objectMapper.readValue(decode_payload,Map.class);
-
-
-
-            byte[] decryptedData = cipher.doFinal(map.get("role").getBytes());
-            byte[] decryptedData2 = cipher.doFinal(map.get("member_id").getBytes());
-
-            return new JwtDataList(Long.parseLong(decryptedData.toString()),decryptedData2.toString());
+            return new JwtDataList(Long.parseLong(memberId),user_admin.get());
 
 
         }
-
         catch (Exception e){
 
             throw new RuntimeException();
@@ -182,30 +221,7 @@ public class JwtCreators {
 
     }
 
-    public String Get_Admin_From_Token(String token){
-        try {
-            Cipher cipher = Cipher.getInstance("AES");
-            cipher.init(Cipher.DECRYPT_MODE, encrypt_key);
 
-
-
-            String[] token_arr=token.split("\\.");
-
-            String payload=token_arr[1];
-            String decode_payload=new String(Base64.getDecoder().decode(payload));
-
-            Map<String, String> map =objectMapper.readValue(decode_payload,Map.class);
-
-            byte[] decryptedData = cipher.doFinal(map.get("role").getBytes());
-            return decryptedData.toString();
-        }
-
-        catch (Exception e){
-
-            throw new RuntimeException();
-        }
-
-    }
 
 
     public boolean Valid_Jwt(String token)throws MalformedJwtException, ExpiredJwtException, UnsupportedJwtException,IllegalArgumentException{

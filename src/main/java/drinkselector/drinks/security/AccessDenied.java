@@ -15,5 +15,7 @@ public class AccessDenied implements AccessDeniedHandler {
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
         response.setStatus(420);
+
+        response.setHeader("msg","권한 부족으로 팅김");
     }
 }

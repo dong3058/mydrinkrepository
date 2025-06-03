@@ -20,8 +20,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-//@Component
+@Component
 @RequiredArgsConstructor
 public class UserRecommendUtils {
 
@@ -50,38 +51,38 @@ public class UserRecommendUtils {
     @Scheduled(cron="0 30 1 * * *")
     private void Update_Drink_Array(){
         List<Drinks> drinks=drinkRepository.findAll();
-
-        double [] [] drinks_arr=new double[drinks.size()][6];
-        redisTemplate.executePipelined(new RedisCallback<Object>() {
+        if(drinks.size()>0) {
 
 
-            @Override
-            public Object doInRedis(RedisConnection connection) throws DataAccessException {
-                StringRedisConnection stringRedisConnection=(StringRedisConnection) connection;
+            double[][] drinks_arr = new double[drinks.size()][6];
+            redisTemplate.executePipelined(new RedisCallback<Object>() {
 
 
-                for(int i=0;drinks.size()>i;i++){
+                @Override
+                public Object doInRedis(RedisConnection connection) throws DataAccessException {
+                    StringRedisConnection stringRedisConnection = (StringRedisConnection) connection;
 
 
-                    Drinks drink=drinks.get(i);
-
-                    stringRedisConnection.hSetNX("drink",String.valueOf(drink.getDrink_id()),"%s-%s-%s".formatted(String.valueOf(drink.getDrink_id()),drink.getDrink_name(),drink.getDrinkType().name()));
-                    drinks_arr[i][0]=drink.getDrink_id();
-                    drinks_arr[i][1]=drink.getSweat();
-                    drinks_arr[i][2]=drink.getDry();
-                    drinks_arr[i][3]=drink.getSharp();
-                    drinks_arr[i][4]=drink.getBitter();
-                    drinks_arr[i][5]=drink.getBody();
+                    for (int i = 0; drinks.size() > i; i++) {
 
 
+                        Drinks drink = drinks.get(i);
+
+                        stringRedisConnection.hSetNX("drink", String.valueOf(drink.getDrink_id()), "%s-%s-%s".formatted(String.valueOf(drink.getDrink_id()), drink.getDrink_name(), drink.getDrinkType().name()));
+                        drinks_arr[i][0] = drink.getDrink_id();
+                        drinks_arr[i][1] = drink.getSweat();
+                        drinks_arr[i][2] = drink.getDry();
+                        drinks_arr[i][3] = drink.getSharp();
+                        drinks_arr[i][4] = drink.getBitter();
+                        drinks_arr[i][5] = drink.getBody();
+
+
+                    }
+
+
+                    return null;
                 }
-
-
-
-
-                return null;
-            }
-        });
+            });
 
 
         /*for(int i=0;drinks.size()>i;i++){
@@ -100,9 +101,9 @@ public class UserRecommendUtils {
 
 
         }*/
-        INDArray arrs=Nd4j.create(drinks_arr);
+            INDArray arrs = Nd4j.create(drinks_arr);
 
-        redisTemplate.opsForValue().set("drink_feature_byte",arrs.toString());
+            redisTemplate.opsForValue().set("drink_feature_byte", arrs.toString());
 
      /*  try {
           byte[] drink_feature_byte=Nd4j.toByteArray(Nd4j.create(drinks_arr));
@@ -114,6 +115,7 @@ public class UserRecommendUtils {
 
            throw new RuntimeException();
        }*/
+        }
     }
 
 
@@ -189,6 +191,10 @@ public class UserRecommendUtils {
         });
 
 
+
+
+        List<Long> li=new ArrayList<>();
+
         List<DrinkShowDto> drinkDtos=recommendDrinks_before_edit.stream().filter(x-> {
             String [] values=x.toString().split("-");
 
@@ -205,23 +211,37 @@ public class UserRecommendUtils {
         }).map(x->{
             String [] values=x.toString().split("-");
             Long drink_id=Long.parseLong(values[0]);
-            Optional<ThumbNail> t=thumbRepository.findById(drink_id);
+            li.add(drink_id);
+            return new DrinkShowDto(drink_id,"",values[1]);
 
-            if(t.isPresent()){
+            //Optional<ThumbNail> t=thumbRepository.findById(drink_id);
 
-                return new DrinkShowDto(drink_id,t.get().getImage_path(),values[1]);
+            /*if(t.isPresent()){
 
-            }
+                return new DrinkShowDto(drink_id,t.get().getThumb_path(),values[1]);
+
+            }*/
 
             //default값을 정해놔야겟는대
-            return new DrinkShowDto(drink_id,t.get().getImage_path(),values[1]);
+            //return new DrinkShowDto(drink_id,t.get().getThumb_path(),values[1]);
 
 
 
 
-        }).limit(5l).collect(Collectors.toList());
+        }).limit(5l).sorted().collect(Collectors.toList());
 
 
+        List<ThumbNail> thumbNails=thumbRepository.find_by_drink_id(li);
+
+        IntStream.range(0,thumbNails.size())
+                .forEach(x->{
+
+                    DrinkShowDto drinkShowDto=drinkDtos.get(x);
+
+                    drinkShowDto.setThumbnail_path(thumbNails.get(x).getImage_path());
+
+
+                });
 
 
 

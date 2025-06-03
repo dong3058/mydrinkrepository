@@ -9,6 +9,7 @@ import drinkselector.drinks.Etcs.Recommend.RecommendDrink;
 import drinkselector.drinks.Serveices.RecommendService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,9 +21,8 @@ public class RecommendControllerImpl implements RecommendController{
 
     private final RecommendService recommendService;
 
-
-
-   @Override
+    @PostMapping("/recommend/get/list")
+    @Override
     public ResponseEntity<ApiResponseCreator<List<DrinkShowDto>>> Get_Recommend_Drink(@RequestBody  UserRecommendInput userRecommendInput) {
 
         return recommendService.get_recommend_drink(userRecommendInput);

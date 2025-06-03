@@ -2,9 +2,11 @@ package drinkselector.drinks.Etcs;
 
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.springframework.stereotype.Component;
 
 
+@Data
 @AllArgsConstructor
 public class ApiResponseCreator<T> {
 

@@ -22,7 +22,7 @@ public class DrinkCommentControllerImpl implements DrinkCommentController {
 
 
     @Override
-    @PostMapping("/comment/save/drinkcomment")
+    @PostMapping("/comment/save/drink_comment")
     public ResponseEntity<ApiResponseCreator<String>> Make_Drink_Comment(@LoginUser Long member_id, @RequestBody DrinkCommentSaveDto drinkCommentDto) {
 
         return drinkCommentService.Save_DrinkComment(member_id,drinkCommentDto);
@@ -30,14 +30,14 @@ public class DrinkCommentControllerImpl implements DrinkCommentController {
 
 
     @Override
-    @GetMapping("/getcomment/{drink_id}")
+    @GetMapping("/comment/get/{drink_id}")
     public ResponseEntity<ApiResponseCreator<List<DrinkCommentShowDto>>> Get_Comment_List(@PathVariable(name = "drink_id")Long drink_id) {
         return drinkCommentService.Get_Drink_List(drink_id);
 
 
     }
 
-    @PostMapping("/comment/update/drinkcomment")
+    @PostMapping("/comment/update/drink_comment")
     @Override
     public ResponseEntity<ApiResponseCreator<String>> update_comment(@LoginUser  Long member_id,@RequestBody DrinkCommentUpdateDto drinkCommentUpdateDto) {
         return drinkCommentService.Update_Drink_Comment(member_id,drinkCommentUpdateDto);

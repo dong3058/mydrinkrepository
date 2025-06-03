@@ -8,8 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class MemberDto {
-
-    public String member_mail;
-    public String password;
+public class EmailAuthDto {
+    private String user_mail;
+    private String auth_code;
 }

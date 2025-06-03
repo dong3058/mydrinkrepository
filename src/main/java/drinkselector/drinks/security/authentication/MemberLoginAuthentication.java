@@ -12,6 +12,7 @@ public class MemberLoginAuthentication implements Authentication {
     private final String email;
 
     private final String password;
+    private final String ip;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -25,7 +26,7 @@ public class MemberLoginAuthentication implements Authentication {
 
     @Override
     public Object getDetails() {
-        return null;
+        return ip;
     }
 
     @Override

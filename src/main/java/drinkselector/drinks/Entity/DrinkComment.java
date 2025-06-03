@@ -5,9 +5,11 @@ import drinkselector.drinks.Etcs.DateSetting;
 import io.lettuce.core.dynamic.annotation.CommandNaming;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Data
+@NoArgsConstructor
 public class DrinkComment extends DateSetting {
 
 
@@ -28,12 +30,11 @@ public class DrinkComment extends DateSetting {
     private Member member;
 
 
-    @ManyToOne(fetch =FetchType.LAZY)
-    @JoinColumn(name="drink_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "drink_id")
     private Drinks drink;
 
 
-    private String Comment_Description;
 
 
 

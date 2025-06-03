@@ -9,6 +9,7 @@ import drinkselector.drinks.Etcs.Exceptions.ExistAccountError;
 import drinkselector.drinks.Etcs.Exceptions.ReLoginError;
 import drinkselector.drinks.Etcs.Jwts.JwtCreators;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 @RequiredArgsConstructor
+@Slf4j
 public class ExceptionController {
 
     private final CookieUtils cookieUtils;
@@ -51,7 +53,7 @@ public class ExceptionController {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponseCreator<String>> EtcErrors(Exception e){
-
+        log.info("error:{}",e);
         return new ResponseEntity<>(ApiResponseCreator.fail(StateEnum.Fail_Normally.getStates()),HttpStatus.BAD_REQUEST);
 
 

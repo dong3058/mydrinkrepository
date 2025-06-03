@@ -3,7 +3,7 @@ package drinkselector.drinks.Etcs.Enums;
 public enum DrinkType {
 
 
-    Beer(1L),Wine(2L);
+    Beer(1L),Wine(2L),Normal(0L);
 
 
     private Long type_number;

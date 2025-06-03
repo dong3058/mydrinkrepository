@@ -7,6 +7,7 @@ import drinkselector.drinks.Dtos.Show.DrinkSearchShowDto;
 import drinkselector.drinks.Dtos.Show.RecentSearchShowDto;
 import drinkselector.drinks.Dtos.Update.DrinkUpdateDto;
 import drinkselector.drinks.Etcs.ApiResponseCreator;
+import drinkselector.drinks.Etcs.Enums.DrinkType;
 import drinkselector.drinks.Etcs.PagingEntity;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -47,7 +48,7 @@ public interface DrinksController {
 
 
     @Operation(summary = "카테고리별로 가져오기",description = "get메서드로 진행할것.")
-    ResponseEntity<ApiResponseCreator<List<DrinkSearchShowDto>>> Get_Drinks_By_Category(String category,PagingEntity p);
+    ResponseEntity<ApiResponseCreator<List<DrinkSearchShowDto>>> Get_Drinks_By_Category(DrinkType category);
 
 
 

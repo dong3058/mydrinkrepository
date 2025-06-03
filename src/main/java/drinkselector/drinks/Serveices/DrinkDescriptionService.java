@@ -7,15 +7,17 @@ import drinkselector.drinks.Etcs.TxtFilter;
 import drinkselector.drinks.Repository.DrinkDescriptionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class DrinkDescriptionService {
 
 
-    DrinkDescriptionRepository drinkDescriptionRepository;
+    private final DrinkDescriptionRepository drinkDescriptionRepository;
 
     public String Filtering_Text(String description){
 

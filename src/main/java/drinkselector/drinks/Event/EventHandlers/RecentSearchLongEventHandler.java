@@ -2,7 +2,7 @@ package drinkselector.drinks.Event.EventHandlers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import drinkselector.drinks.Dtos.Show.RecentSearchShowDto;
-import drinkselector.drinks.Etcs.RedisUtill.ReCentSearchLog;
+import drinkselector.drinks.Etcs.RedisUtill.RedisUtills;
 import drinkselector.drinks.Event.Events.RecentSearchLogEvent;
 import drinkselector.drinks.Event.Events.GetRecentSearchLongEvent;
 import lombok.RequiredArgsConstructor;
@@ -19,10 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class RecentSearchLongEventHandler {
 
 
-    private final ReCentSearchLog reCentSearchLog;
-    private final ObjectMapper objectMapper;
-    private final RedisTemplate<String,String> redisTemplate;
-
+    private final RedisUtills redisUtills;
 
 
     @Async
@@ -30,10 +27,10 @@ public class RecentSearchLongEventHandler {
     public void add_search_log(RecentSearchLogEvent recentSearchLogEvent){
 
         if(recentSearchLogEvent.getMember_id()==null){
-        reCentSearchLog.real_time_search_log(recentSearchLogEvent.getDrink_id(),recentSearchLogEvent.getDrink_name());}
+        redisUtills.real_time_search_log(recentSearchLogEvent.getDrink_id(),recentSearchLogEvent.getDrink_name());}
         else{
 
-            reCentSearchLog.update_recent_search_log(recentSearchLogEvent.getMember_id(),recentSearchLogEvent.getDrink_id(),recentSearchLogEvent.getDrink_name());
+            redisUtills.update_recent_search_log(recentSearchLogEvent.getMember_id(),recentSearchLogEvent.getDrink_id(),recentSearchLogEvent.getDrink_name());
         }
     }
     @EventListener(GetRecentSearchLongEvent.class)
@@ -41,14 +38,8 @@ public class RecentSearchLongEventHandler {
 
 
 
-        List<RecentSearchShowDto> recentSearchDtos= reCentSearchLog.return_realtime_issue();
-
-        try {
-            redisTemplate.opsForValue().set(recentSearchLongUuidEvent.getWork_id(), objectMapper.writeValueAsString(recentSearchDtos),20, TimeUnit.SECONDS);
-        }
-        catch (Exception e){
-            throw new RuntimeException();
-        }
+        List<RecentSearchShowDto> recentSearchDtos= redisUtills.return_realtime_issue();
+        recentSearchLongUuidEvent.setRecentSearchDtos(recentSearchDtos);
 
     }
 

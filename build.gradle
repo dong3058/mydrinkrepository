@@ -40,9 +40,10 @@ dependencies {
 
 
 
+
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
-
+	//implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
 
 	// Apache Tika 의존성 추가

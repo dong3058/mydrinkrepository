@@ -56,7 +56,7 @@ public class DrinkCommentEventHandler {
             String description= TxtFilter.file_txt_filter(drinkCommentUpdateDto.getDescription());
 
             drinkComment.get().setComment_description(description);
-
+            drinkCommentRepository.save(drinkComment.get());
 
             return ;
         }

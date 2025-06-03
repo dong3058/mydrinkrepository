@@ -5,6 +5,7 @@ import drinkselector.drinks.Etcs.Cookie.CookieUtils;
 import drinkselector.drinks.Etcs.Enums.Oauth2Enum;
 import drinkselector.drinks.Etcs.Jwts.Jwt;
 import drinkselector.drinks.Etcs.Jwts.JwtCreators;
+import drinkselector.drinks.Event.Events.LoginSecurityEvent;
 import drinkselector.drinks.security.authentication.Oauth2Auth;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -12,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,7 +32,7 @@ import java.util.List;
 public class Oauth2Filter extends OncePerRequestFilter {
 
 
-    private final AntPathMatcher antPathMatcher;
+    private final ApplicationEventPublisher publisher;
 
     private final JwtCreators jwtCreators;
     private final CookieUtils cookieUtils;
@@ -46,23 +48,36 @@ public class Oauth2Filter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String path=request.getServletPath();
-        log.info("path:{}",path);
+        try {
+            String path = request.getServletPath();
+            log.info("path:{}", path);
 
-        String query_str=request.getQueryString();
-        Authentication oauthauth=new Oauth2Auth(path,query_str);
+            String query_str = request.getQueryString();
+            Authentication oauthauth = new Oauth2Auth(path, query_str);
 
 
-        oauthauth=authenticationManager.authenticate(oauthauth);
-        Member member=(Member) oauthauth.getDetails();
-        Jwt jwt=jwtCreators.gen_token(member.getMember_id(),member.getUserAdmin());
+            oauthauth = authenticationManager.authenticate(oauthauth);
+            Member member = (Member) oauthauth.getDetails();
+            String ip = request.getRemoteAddr();
+            Jwt jwt = jwtCreators.gen_token(member.getMember_id(), member.getUserAdmin());
 
-        ResponseCookie responseCookie=cookieUtils.Make_Response_Cookie(jwt.getAccess_token());
+            publisher.publishEvent(new LoginSecurityEvent(member.getMember_mail(), ip));
 
-        response.addHeader(HttpHeaders.SET_COOKIE,responseCookie.toString());
 
-        response.setStatus(200);
-        response.sendRedirect("http://localhost:3000/home");
+            ResponseCookie responseCookie = cookieUtils.Make_Response_Cookie(jwt.getAccess_token());
+
+            response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
+
+            response.setStatus(200);
+
+        }
+        catch (Exception e){
+
+
+            response.setStatus(400);
+
+        }
+        //response.sendRedirect("http://localhost:3000/home");
 
     }
 }

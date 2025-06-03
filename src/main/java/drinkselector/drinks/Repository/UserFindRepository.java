@@ -1,6 +1,6 @@
 package drinkselector.drinks.Repository;
 
-import drinkselector.drinks.Dtos.UserFindDto;
+
 import drinkselector.drinks.Entity.UserFind;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

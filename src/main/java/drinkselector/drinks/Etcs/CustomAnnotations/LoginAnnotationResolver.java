@@ -27,7 +27,7 @@ public class LoginAnnotationResolver implements HandlerMethodArgumentResolver {
 
 
 
-        return parameter.getParameterAnnotation(LoginUser.class) !=null && parameter.getParameterType().equals(long.class);
+        return parameter.getParameterAnnotation(LoginUser.class) !=null && parameter.getParameterType().equals(Long.class);
     }
 
     @Override
@@ -35,6 +35,13 @@ public class LoginAnnotationResolver implements HandlerMethodArgumentResolver {
 
        Authentication authentication= SecurityContextHolder.getContext().getAuthentication();
 
+       log.info("auth:{}",authentication==null);
+
+
+
+       if(authentication==null || authentication.getPrincipal().equals("anonymousUser") ){
+           return null;
+       }
 
        return (Long) authentication.getPrincipal();
         /*HttpServletRequest request=(HttpServletRequest) webRequest.getNativeRequest();

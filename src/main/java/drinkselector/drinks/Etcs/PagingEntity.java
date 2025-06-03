@@ -7,9 +7,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class PagingEntity {
 
-
     private int page;
-
     private int size;
 
 }

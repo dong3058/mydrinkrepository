@@ -15,7 +15,8 @@ public class DateSetting {
 
 
 
-    @Column(nullable = false)
+    //@Column(nullable = false)
+    @Column(nullable = true)
     public LocalDateTime sign_in_date;
 
 

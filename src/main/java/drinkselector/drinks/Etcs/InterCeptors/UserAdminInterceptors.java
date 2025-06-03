@@ -1,5 +1,6 @@
 package drinkselector.drinks.Etcs.InterCeptors;
 
+import drinkselector.drinks.Dtos.JwtDataList;
 import drinkselector.drinks.Entity.Member;
 import drinkselector.drinks.Etcs.Cookie.CookieUtils;
 import drinkselector.drinks.Etcs.Enums.UserAdmin;
@@ -21,7 +22,7 @@ public class UserAdminInterceptors implements HandlerInterceptor {
 
     private final CookieUtils cookieUtils;
 
-    private final JwtCreators jwtProviders;
+    private final JwtCreators jwtCreators;
 
 
     private final MemberRepository memberRepository;
@@ -31,10 +32,11 @@ public class UserAdminInterceptors implements HandlerInterceptor {
         String access_token=cookieUtils.Get_Token_From_Cookie(request);
 
 
-        if(jwtProviders.Valid_Jwt(access_token)){
+        if(jwtCreators.Valid_Jwt(access_token)){
 
-            Long member_id=jwtProviders.Get_Member_Id_From_Jwt(access_token);
+            JwtDataList jwtDataList=jwtCreators.Get_Data_From_Token(access_token);
 
+            Long member_id=jwtDataList.getMember_id();
             Optional<Member> member=memberRepository.findById(member_id);
 
            if(member.isPresent()){

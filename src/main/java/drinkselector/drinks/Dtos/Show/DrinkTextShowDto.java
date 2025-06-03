@@ -1,20 +1,21 @@
 package drinkselector.drinks.Dtos.Show;
 
-
+import drinkselector.drinks.Etcs.Enums.DrinkType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
-public class RecentSearchShowDto {
+public class DrinkTextShowDto {
 
 
     private Long drink_id;
-
     private String drink_name;
 
-    private String thumb_path;
+    private String drink_description;
+
+    private DrinkType drinkType;
+
+
 
 }

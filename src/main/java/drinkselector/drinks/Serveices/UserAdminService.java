@@ -5,39 +5,50 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import drinkselector.drinks.Dtos.Save.DrinkCommentSaveDto;
 import drinkselector.drinks.Dtos.MemberInfoDto;
+import drinkselector.drinks.Dtos.Show.DrinkCommentShowDto;
 import drinkselector.drinks.Entity.DrinkComment;
 import drinkselector.drinks.Entity.Member;
 import drinkselector.drinks.Etcs.ApiResponseCreator;
 import drinkselector.drinks.Etcs.Enums.StateEnum;
 import drinkselector.drinks.Etcs.Enums.UserAdmin;
+import drinkselector.drinks.Event.Events.UserAdminEvent.UserAdminChangeEvent;
 import drinkselector.drinks.Event.Events.UserAdminEvent.UserAdminEvent;
+import drinkselector.drinks.Event.Events.UserAdminEvent.UserAdminGetInfoEvent;
+import drinkselector.drinks.Repository.DrinkCommentRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
+@Slf4j
 public class UserAdminService {
 
 
 
     private final ApplicationEventPublisher publisher;
-    private final RedisTemplate<String,String> redisTemplate;
-    private final ObjectMapper objectMapper;
+    private final DrinkCommentRepository drinkCommentRepository;
 
     public ResponseEntity<ApiResponseCreator<MemberInfoDto>> Get_Member_Info(String member_name){
 
 
-        String work_id= UUID.randomUUID().toString();
-        publisher.publishEvent(new UserAdminEvent(member_name,work_id));
+
+        UserAdminGetInfoEvent userAdminGetInfoEvent=new UserAdminGetInfoEvent(member_name);
+        publisher.publishEvent(userAdminGetInfoEvent);
         try{
-        Member member=objectMapper.readValue(redisTemplate.opsForValue().get(work_id),Member.class);
+        Member member=userAdminGetInfoEvent.getMember();
 
 
         return ResponseEntity.ok(ApiResponseCreator.success(new MemberInfoDto(member.getMember_id(),member.getMember_mail(),member.getUserAdmin(),member.getSign_in_date()),StateEnum.Success_Normally.getStates()));}
@@ -49,45 +60,29 @@ public class UserAdminService {
         }
     }
 
-    public ResponseEntity<ApiResponseCreator<List<DrinkCommentSaveDto>>> Get_Member_Comment(Long member_id){
+    public ResponseEntity<ApiResponseCreator<List<DrinkCommentShowDto>>> Get_Member_Comment(Long member_id){
 
-        String work_id= UUID.randomUUID().toString();
-        publisher.publishEvent(new UserAdminEvent(member_id,work_id));
-        try {
-            List<DrinkComment> drinkComments = objectMapper.readValue(redisTemplate.opsForValue().get(work_id), new TypeReference<List<DrinkComment>>() {
-            });
+            List<DrinkComment> drinkComments=drinkCommentRepository.Get_Drink_Comment_List_By_Member(member_id);
 
-            List<DrinkCommentSaveDto> drinkCommentDtoList = drinkComments.stream().map(x -> {
+            List<DrinkCommentShowDto> drinkCommentDtoList=drinkComments.stream()
+                    .map(x->{
 
-
-                return new DrinkCommentSaveDto(x.getDrink().getDrink_id(), x.getComment_id(), x.getOther_drink_comment_id(),x.getWriter().getMember_id(), x.getWriter().getMember_mail(), x.getComment_description(), x.getSign_in_date());
-
-            }).collect(Collectors.toList());
-
+                       return new DrinkCommentShowDto(x.getComment_id(),x.getMember().getMember_mail(),x.getComment_description(),x.getUpdate_date());
+                    }).toList();
             return ResponseEntity.ok(ApiResponseCreator.success(drinkCommentDtoList, StateEnum.Success_Normally.getStates()));
 
-        }
-        catch (Exception e){
 
-            throw new RuntimeException();
-        }
+
 
     }
 
 
-    public ResponseEntity<ApiResponseCreator<UserAdmin>> Change_Member_Admin(Long member_id, UserAdmin admin){
+    public ResponseEntity<ApiResponseCreator<String>> Change_Member_Admin(Long member_id,UserAdmin admin){
 
-        String work_id= UUID.randomUUID().toString();
-        publisher.publishEvent(new UserAdminEvent(member_id,admin,work_id));
-        try {
-            Member member = objectMapper.readValue(redisTemplate.opsForValue().get(work_id), Member.class);
-            return  ResponseEntity.ok(ApiResponseCreator.success(member.getUserAdmin(),StateEnum.Success_Normally.getStates()));
-        }
+        log.info("admin:{}",admin);
+        publisher.publishEvent(new UserAdminChangeEvent(member_id,admin));
+        return new ResponseEntity<>(ApiResponseCreator.success("ok",StateEnum.Success_Normally.getStates()),HttpStatus.OK);
 
-        catch(Exception e){
-
-            throw new RuntimeException();
-        }
 
 
     }

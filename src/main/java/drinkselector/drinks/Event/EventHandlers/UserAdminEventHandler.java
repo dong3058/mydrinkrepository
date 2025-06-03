@@ -3,8 +3,14 @@ package drinkselector.drinks.Event.EventHandlers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import drinkselector.drinks.Entity.Member;
 import drinkselector.drinks.Etcs.ApiResponseCreator;
+import drinkselector.drinks.Etcs.Cookie.CookieUtils;
+import drinkselector.drinks.Etcs.Enums.RedisKeyEnum;
 import drinkselector.drinks.Etcs.Enums.StateEnum;
+import drinkselector.drinks.Etcs.Jwts.JwtCreators;
+import drinkselector.drinks.Etcs.RedisUtill.RedisUtills;
+import drinkselector.drinks.Event.Events.UserAdminEvent.UserAdminChangeEvent;
 import drinkselector.drinks.Event.Events.UserAdminEvent.UserAdminEvent;
+import drinkselector.drinks.Event.Events.UserAdminEvent.UserAdminGetInfoEvent;
 import drinkselector.drinks.Repository.DrinkCommentRepository;
 import drinkselector.drinks.Repository.MemberRepository;
 import drinkselector.drinks.Serveices.DrinkDescriptionService;
@@ -26,34 +32,42 @@ public class UserAdminEventHandler {
 
 
     private final MemberRepository memberRepository;
-    private final DrinkCommentRepository drinkCommentRepository;
-    private final RedisTemplate<String,String> redisTemplate;
-    private final ObjectMapper objectMapper;
+    private final RedisUtills redisUtills;
 
-    @EventListener(UserAdminEvent.class)
-    public void User_Admin_Need_Member_Service(UserAdminEvent userAdminEvent){
-        try {
-            if (userAdminEvent.getMember_name() != null) {
-                Optional<Member> member = memberRepository.Check_User_Exist(userAdminEvent.getMember_name());
-                if (member.isEmpty()) {
-                    throw new RuntimeException();
-                }
 
-                redisTemplate.opsForValue().set(userAdminEvent.getRedis_work_id(), objectMapper.writeValueAsString(member.get()),60, TimeUnit.SECONDS);
 
+
+
+    @EventListener(UserAdminGetInfoEvent.class)
+    public void User_Admim_Get_Info(UserAdminGetInfoEvent userAdminGetInfoEvent){
+        Optional<Member> member=memberRepository.Check_User_Exist(userAdminGetInfoEvent.getMember_name());
+
+        if (member.isPresent()){
+            try {
+
+                userAdminGetInfoEvent.setMember(member.get());
             }
-            else{
-               if( userAdminEvent.getMember_name() == null & userAdminEvent.getUserAdmin() == null) {
-                   redisTemplate.opsForValue().set(userAdminEvent.getRedis_work_id(), objectMapper.writeValueAsString(drinkCommentRepository.Get_Drink_Comment_List_By_Member(userAdminEvent.getMember_id())),60,TimeUnit.SECONDS);
-                   }
-               else{
-                     redisTemplate.opsForValue().set(userAdminEvent.getRedis_work_id(), objectMapper.writeValueAsString(memberRepository.Change_Member_Admin(userAdminEvent.getMember_id(), userAdminEvent.getUserAdmin()).get()),60,TimeUnit.SECONDS);}
+            catch (Exception e){
+
+                throw new RuntimeException();
             }
         }
-        catch (Exception e){
-
+        else{
             throw new RuntimeException();
         }
+
+
+    }
+    @EventListener(UserAdminChangeEvent.class)
+    public void User_Admin_Change_Event(UserAdminChangeEvent userAdminChangeEvent){
+
+
+
+        redisUtills.RedisHashSetOperation(RedisKeyEnum.User_Admin.getKey(), String.valueOf(userAdminChangeEvent.getMember_id()),userAdminChangeEvent.getUserAdmin().name());
+        memberRepository.Change_Member_Admin(userAdminChangeEvent.getMember_id(),userAdminChangeEvent.getUserAdmin());
+
+
+
 
     }
 

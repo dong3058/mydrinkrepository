@@ -7,48 +7,57 @@ import drinkselector.drinks.Dtos.Show.RecentSearchShowDto;
 
 import drinkselector.drinks.Entity.ThumbNail;
 import drinkselector.drinks.Etcs.ApiResponseCreator;
+import drinkselector.drinks.Etcs.Enums.RedisOpEnum;
 import drinkselector.drinks.Etcs.Enums.StateEnum;
-import drinkselector.drinks.Etcs.RedisUtill.ReCentSearchLog;
+import drinkselector.drinks.Etcs.RedisUtill.RedisOperationDto;
+import drinkselector.drinks.Etcs.RedisUtill.RedisUtills;
 import drinkselector.drinks.Repository.ThumbRepository;
 import lombok.RequiredArgsConstructor;
-import org.nd4j.linalg.api.ops.Op;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserFindService {
 
 
-    private final RedisTemplate<String,String> redisTemplate;
 
-    private final ReCentSearchLog reCentSearchLog;
+    private final RedisUtills redisUtills;
 
     private final ThumbRepository thumbRepository;
 
     public ResponseEntity<ApiResponseCreator<List<DrinkShowDto>>> Get_User_Find_List(Long user_id){
 
-        Map<Object,Object> maps=redisTemplate.opsForHash().entries("%s_list".formatted(user_id));
+        Map<Object,Object> maps=redisUtills.RedisOpsHashGetEntryOperation("%s_list".formatted(user_id));
 
 
        Set<Object> keys=maps.keySet();
+       log.info("keys:{}",keys.size());
+       List<Long> key_list=keys.stream().map(x->{
 
-       List<DrinkShowDto> userFindDtos=keys.stream().map(x->{
+           log.info("return_id:{}",x);
+           return Long.parseLong((String) x);
 
-          Long drink_id=Long.parseLong((String) x);
+       }).toList();
 
-          String drink_name=(String)maps.get(x);
-           Optional<ThumbNail> thumbNail=thumbRepository.find_by_drink_id(drink_id);
 
-          return new DrinkShowDto(drink_id,thumbNail.get().getThumb_path(),drink_name);
 
-       }).collect(Collectors.toList());
+       List<ThumbNail> thumbNails=thumbRepository.find_by_drink_id(key_list);
 
+       List<DrinkShowDto> userFindDtos=thumbNails.stream().map(x->{
+           String drink_name=(String) maps.get((x.getDrink_id().toString()));
+
+
+           return new DrinkShowDto(x.getDrink_id(),x.getImage_path(),drink_name);
+
+
+       }).toList();
 
 
        // List<UserFindDto> userFindDtos=userFindRepository.Find_User_Choose_List(user_id);
@@ -63,9 +72,13 @@ public class UserFindService {
     public ResponseEntity<ApiResponseCreator<String>> Add_User_List(Long user_id,Long drink_id,String drink_name){
 
 
+        List<RedisOperationDto> redisOperationDtos=new ArrayList<>();
 
+        redisOperationDtos.add(new RedisOperationDto(RedisOpEnum.HashSet,"%s_list".formatted(user_id), String.valueOf(drink_id), drink_name));
+        redisOperationDtos.add(new RedisOperationDto(RedisOpEnum.SetAdd,String.valueOf(drink_id),String.valueOf(user_id)));
 
-        redisTemplate.execute(new SessionCallback<Object>() {
+        redisUtills.Make_Redis_Tx(redisOperationDtos);
+       /* redisTemplate.execute(new SessionCallback<Object>() {
             @Override
             public  Object execute(RedisOperations operations) throws DataAccessException {
                 operations.multi();
@@ -77,7 +90,7 @@ public class UserFindService {
                 operations.exec();
                 return null;
             }
-        });
+        });*/
 
 
 
@@ -101,7 +114,15 @@ public class UserFindService {
     public ResponseEntity<ApiResponseCreator<String>> Del_User_List(Long user_id,Long drink_id){
 
 
-        redisTemplate.execute(new SessionCallback<Object>() {
+        List<RedisOperationDto> redisOperationDtos=new ArrayList<>();
+
+        redisOperationDtos.add(new RedisOperationDto(RedisOpEnum.HashDelete,"%s_list".formatted(user_id), String.valueOf(drink_id)));
+        redisOperationDtos.add(new RedisOperationDto(RedisOpEnum.SetDelete,String.valueOf(drink_id),String.valueOf(user_id)));
+
+        redisUtills.Make_Redis_Tx(redisOperationDtos);
+
+
+        /*redisTemplate.execute(new SessionCallback<Object>() {
 
             @Override
             public  Object execute(RedisOperations operations) throws DataAccessException {
@@ -116,7 +137,7 @@ public class UserFindService {
 
                 return null;
             }
-        });
+        });*/
 
 
 
@@ -141,6 +162,6 @@ public class UserFindService {
 
 
 
-        return ResponseEntity.ok(ApiResponseCreator.success(reCentSearchLog.get_recent_search_log(member_id),StateEnum.Success_Normally.getStates()));
+        return ResponseEntity.ok(ApiResponseCreator.success(redisUtills.get_recent_search_log(member_id),StateEnum.Success_Normally.getStates()));
     }
 }

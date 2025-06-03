@@ -9,6 +9,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -22,6 +23,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class CookieFilter extends OncePerRequestFilter {
 
     private final CookieUtils cookieUtils;
@@ -33,12 +35,10 @@ public class CookieFilter extends OncePerRequestFilter {
 
 
     private final List<String> includepaths = List.of(
-            "list/**",
-            "/search/drink/**",
-            "/comment/**",
-            "/member/change"
+            "/drink/search/**","/user_find/**","/drink/update","/drink/save", "/comment/save/**","/comment/update/**" ,"/member/change","/admin/**"
 
     );
+
 
 
     @Override
@@ -53,18 +53,27 @@ public class CookieFilter extends OncePerRequestFilter {
 
         String access_token=cookieUtils.Get_Token_From_Cookie(request);
 
-
+        log.info("Access_token:{}",access_token);
+        log.info("경로:{}",request.getServletPath());
         if(access_token==null){
 
+            if(request.getServletPath().contains("/drink/search/")){
+                log.info("토큰없는대 검색경로인경우");
+                filterChain.doFilter(request,response);
+            }
             response.setStatus(400);
 
         }
         try{
             JwtDataList jwtDataList=jwtCreators.Get_Data_From_Token(access_token);
+            log.info("data:{}",jwtDataList);
             Authentication jwtauth=new JwtMemberAuth(jwtDataList.getMember_id(),List.of(new SimpleGrantedAuthority(jwtDataList.getUser_admin())));
-
+            log.info("jwtauth:{}",jwtauth.getAuthorities());
+            log.info("jwtauth:{}",jwtauth.getPrincipal());
             SecurityContextHolder.getContext().setAuthentication(jwtauth);
 
+
+            log.info("마무릮ㄲ<ㅌ");
 
             filterChain.doFilter(request,response);
 

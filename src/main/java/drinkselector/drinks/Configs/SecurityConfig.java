@@ -4,7 +4,7 @@ package drinkselector.drinks.Configs;
 import drinkselector.drinks.security.AccessDenied;
 import drinkselector.drinks.security.EntryPointHandler;
 
-import drinkselector.drinks.security.filter.AdminFilter;
+
 import drinkselector.drinks.security.filter.CookieFilter;
 import drinkselector.drinks.security.filter.InitLoginFilter;
 import drinkselector.drinks.security.filter.Oauth2Filter;
@@ -19,6 +19,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.cors.CorsConfiguration;
@@ -37,7 +38,6 @@ public class SecurityConfig {
     private final InitLoginFilter initLoginFilter;
     private final CookieFilter cookieFilter;
     private final Oauth2Filter oauth2Filter;
-    private final AdminFilter adminFilter;
     private final AuthenticationManager authenticationManager;
 
 
@@ -55,12 +55,13 @@ public class SecurityConfig {
                 .authenticationManager(authenticationManager)
                 .authorizeHttpRequests(auth->auth
                         .requestMatchers("/admin/**").hasRole("Admin")
-                        .requestMatchers( "list/**","/search/drink/**", "/comment/**", "/member/change")
+                        .requestMatchers( "/user_find/**", "/comment/save/**","/comment/update/**" ,"/member/change")
                         .hasAnyRole("Admin","User")
+                        .requestMatchers("/drink/update","/drink/save")
+                        .hasRole("Admin")
                         .anyRequest().permitAll())
                 .addFilterAt(initLoginFilter, BasicAuthenticationFilter.class)
-                .addFilterAfter(cookieFilter, BasicAuthenticationFilter.class)
-                .addFilterAfter(adminFilter, BasicAuthenticationFilter.class)
+                .addFilterAfter(cookieFilter,BasicAuthenticationFilter.class)
                 .addFilterAfter(oauth2Filter,BasicAuthenticationFilter.class);
         return http.build();
     }

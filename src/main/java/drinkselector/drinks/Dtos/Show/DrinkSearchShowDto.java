@@ -17,6 +17,7 @@ public class DrinkSearchShowDto {
 
     private String thumb_path;
 
+
     public DrinkSearchShowDto(Long drink_id, String drink_name) {
         this.drink_id = drink_id;
         this.drink_name = drink_name;
