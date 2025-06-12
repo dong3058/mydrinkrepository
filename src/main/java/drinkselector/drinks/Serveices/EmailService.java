@@ -15,6 +15,7 @@ import drinkselector.drinks.Etcs.Jwts.Jwt;
 import drinkselector.drinks.Etcs.Jwts.JwtCreators;
 import drinkselector.drinks.Etcs.RedisUtill.RedisOperationDto;
 import drinkselector.drinks.Etcs.RedisUtill.RedisUtills;
+import drinkselector.drinks.Event.Events.EmailAuthEvent;
 import drinkselector.drinks.Repository.MemberRepository;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -61,13 +62,13 @@ public class EmailService {
 
     public ResponseEntity<ApiResponseCreator<String>> Sending_Auth_Code(MemberDto memberDto){
 
-        String user_email=memberDto.getMember_mail();
+        String user_email=memberDto.member_mail();
 
 
         String auth_code=UUID.randomUUID().toString();
 
 
-        publisher.publishEvent(new EmailAuthDto(user_email,auth_code));
+        publisher.publishEvent(new EmailAuthEvent(user_email,auth_code));
         log.info("메일코드전송");
         return ResponseEntity.ok(ApiResponseCreator.success("성공", StateEnum.Success_Normally.getStates()));
 
@@ -81,24 +82,24 @@ public class EmailService {
          * user_login_ip
 
          */
-        Optional<String> auth_code=redisUtills.RedisValueGetOperation(mailAuthCodeDto.getMail());
+        Optional<String> auth_code=redisUtills.RedisValueGetOperation(mailAuthCodeDto.mail());
 
         if(auth_code.isEmpty()){
 
             log.info("메일 코드 재전송");
 
             String code=UUID.randomUUID().toString();
-            publisher.publishEvent(new EmailAuthDto(mailAuthCodeDto.getMail(),code));
+            publisher.publishEvent(new EmailAuthEvent(mailAuthCodeDto.mail(),code));
             return new ResponseEntity<>(ApiResponseCreator.fail(StateEnum.Fail_Normally.getStates()), HttpStatus.BAD_REQUEST);
 
 
         }
 
-        if(auth_code.get().equals(mailAuthCodeDto.getAuth_code())&&auth_code.isPresent()){
+        if(auth_code.get().equals(mailAuthCodeDto.auth_code())&&auth_code.isPresent()){
             log.info("메일 코드 성공");
 
 
-            Optional<Member> member=memberRepository.Check_User_Exist(mailAuthCodeDto.getMail());
+            Optional<Member> member=memberRepository.Check_User_Exist(mailAuthCodeDto.mail());
 
             Long member_id=member.get().getMember_id();
             UserAdmin userAdmin=member.get().getUserAdmin();
@@ -110,9 +111,9 @@ public class EmailService {
 
             List<RedisOperationDto> redisOperationDtos=new ArrayList<>();
 
-            redisOperationDtos.add(new RedisOperationDto(RedisOpEnum.HashSet, RedisKeyEnum.User_Login_Ip.getKey(),mailAuthCodeDto.getMail(),ip));
-            redisOperationDtos.add(new RedisOperationDto(RedisOpEnum.HashSet,RedisKeyEnum.User_Login_Count.getKey(),mailAuthCodeDto.getMail(),"0"));
-            redisOperationDtos.add(new RedisOperationDto(RedisOpEnum.ValueDelete, mailAuthCodeDto.getMail()));
+            redisOperationDtos.add(new RedisOperationDto(RedisOpEnum.HashSet, RedisKeyEnum.User_Login_Ip.getKey(),mailAuthCodeDto.mail(),ip));
+            redisOperationDtos.add(new RedisOperationDto(RedisOpEnum.HashSet,RedisKeyEnum.User_Login_Count.getKey(),mailAuthCodeDto.mail(),"0"));
+            redisOperationDtos.add(new RedisOperationDto(RedisOpEnum.ValueDelete, mailAuthCodeDto.mail()));
 
             redisUtills.Make_Redis_Pipeline(redisOperationDtos);
             /*redisTemplate.executePipelined(new RedisCallback<Object>() {

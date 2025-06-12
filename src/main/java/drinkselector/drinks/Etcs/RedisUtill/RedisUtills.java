@@ -311,22 +311,22 @@ public class RedisUtills {
                 StringRedisConnection stringRedisConnection=(StringRedisConnection) connection;
                 redisOperationDtos.stream().forEach(x->{
 
-                    if(x.getRedisOpEnum().equals(RedisOpEnum.HashSet)){
+                    if(x.redisOpEnum().equals(RedisOpEnum.HashSet)){
 
-                        stringRedisConnection.hSet(x.getKey(),x.getHash_key(),x.getString_value());
-
-
-
-                    } else if (x.getRedisOpEnum().equals(RedisOpEnum.ValueSet)) {
+                        stringRedisConnection.hSet(x.key(),x.hash_key(),x.string_value());
 
 
-                        stringRedisConnection.set(x.getKey(),x.getString_value());
 
-                    } else if (x.getRedisOpEnum().equals(RedisOpEnum.ValueDelete)) {
-                        stringRedisConnection.del(x.getKey());
-                    } else if (x.getRedisOpEnum().equals(RedisOpEnum.HashDelete)) {
+                    } else if (x.redisOpEnum().equals(RedisOpEnum.ValueSet)) {
 
-                        stringRedisConnection.hDel(x.getKey(),x.getHash_key());
+
+                        stringRedisConnection.set(x.key(),x.string_value());
+
+                    } else if (x.redisOpEnum().equals(RedisOpEnum.ValueDelete)) {
+                        stringRedisConnection.del(x.key());
+                    } else if (x.redisOpEnum().equals(RedisOpEnum.HashDelete)) {
+
+                        stringRedisConnection.hDel(x.key(),x.hash_key());
 
                     }
 
@@ -355,23 +355,21 @@ public class RedisUtills {
 
                 redisOperationDtos.stream().forEach(x->{
 
-                    if(x.getRedisOpEnum().equals(RedisOpEnum.HashSet)){
+                    if(x.redisOpEnum().equals(RedisOpEnum.HashSet)){
 
 
-                        hop.put(x.getKey(),x.getHash_key(),x.getString_value());
-                    } else if (x.getRedisOpEnum().equals(RedisOpEnum.SetAdd)) {
+                        hop.put(x.key(),x.hash_key(),x.string_value());
+                    } else if (x.redisOpEnum().equals(RedisOpEnum.SetAdd)) {
 
-                        sop.add(x.getKey(),x.getString_value());
+                        sop.add(x.key(),x.string_value());
 
                     }
-                    else if (x.getRedisOpEnum().equals(RedisOpEnum.HashDelete)){
+                    else if (x.redisOpEnum().equals(RedisOpEnum.HashDelete)){
                         //추후에 개선좀 해야될듯 ㅇㅇ; 생성자에서 문제가생김 빌더로 수정해야되나?
-                        hop.delete(x.getKey(),x.getString_value());
-                    } else if (x.getRedisOpEnum().equals(RedisOpEnum.SetDelete)) {
+                        hop.delete(x.key(),x.string_value());
+                    } else if (x.redisOpEnum().equals(RedisOpEnum.SetDelete)) {
 
-
-                        log.info("집합연산 에러");
-                        sop.remove(x.getKey(),x.getString_value());
+                        sop.remove(x.key(),x.string_value());
 
                     }
 

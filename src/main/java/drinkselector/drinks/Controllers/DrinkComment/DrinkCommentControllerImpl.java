@@ -42,4 +42,11 @@ public class DrinkCommentControllerImpl implements DrinkCommentController {
     public ResponseEntity<ApiResponseCreator<String>> update_comment(@LoginUser  Long member_id,@RequestBody DrinkCommentUpdateDto drinkCommentUpdateDto) {
         return drinkCommentService.Update_Drink_Comment(member_id,drinkCommentUpdateDto);
     }
+
+
+    @PostMapping("/comment/delete")
+    @Override
+    public ResponseEntity<ApiResponseCreator<String>> delete_comment(@LoginUser Long member_id,@RequestBody DrinkCommentUpdateDto drinkCommentUpdateDto) {
+        return null;
+    }
 }

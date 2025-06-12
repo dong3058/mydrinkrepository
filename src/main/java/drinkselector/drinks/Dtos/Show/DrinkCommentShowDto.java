@@ -13,19 +13,22 @@ import org.nd4j.shade.jackson.datatype.joda.deser.LocalDateDeserializer;
 
 import java.time.LocalDateTime;
 
-@Data
 
+/*@Data
 @AllArgsConstructor
-@NoArgsConstructor
-public class DrinkCommentShowDto {
-    private Long comment_id;
+@NoArgsConstructor*/
+public record DrinkCommentShowDto(Long comment_id,String member_name,String description,
+                                  @JsonSerialize(using = LocalDateTimeSerializer.class)
+                                  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+                                  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+                                  LocalDateTime write_time) {
+   /* private Long comment_id;
     private String member_name;
     private String description;
 
-
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    private LocalDateTime write_time;
+    private LocalDateTime write_time;*/
 
 
 }

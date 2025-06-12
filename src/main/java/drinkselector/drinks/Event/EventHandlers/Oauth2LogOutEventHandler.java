@@ -18,7 +18,7 @@ public class Oauth2LogOutEventHandler {
     public void Logout(Oauth2LogOutEvent oauth2LogOutEvent){
 
 
-        Oauth2Enum oauth2Enum=oauth2LogOutEvent.getOauth2Enum();
+        Oauth2Enum oauth2Enum=oauth2LogOutEvent.oauth2Enum();
         if(oauth2Enum.name().equals("Kakao")) {
             RestTemplate restTemplate=new RestTemplate();
             HttpHeaders headers2 = new HttpHeaders();

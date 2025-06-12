@@ -9,14 +9,17 @@ import drinkselector.drinks.Etcs.Enums.StateEnum;
 import drinkselector.drinks.Event.Events.Save.DrinkCommentSaveEvent;
 import drinkselector.drinks.Repository.DrinkCommentRepository;
 import lombok.RequiredArgsConstructor;
+import org.nd4j.shade.protobuf.Api;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class DrinkCommentService {
 
 
@@ -29,7 +32,7 @@ public class DrinkCommentService {
 
 
 
-        publisher.publishEvent(new DrinkCommentSaveEvent(member_id, drinkCommentDto.getDrink_id(),drinkCommentDto.getComment_description()));
+        publisher.publishEvent(new DrinkCommentSaveEvent(member_id, drinkCommentDto.drink_id(),drinkCommentDto.comment_description()));
 
 
 
@@ -50,12 +53,24 @@ public class DrinkCommentService {
 
 
 
-        publisher.publishEvent(new DrinkCommentUpdateDto(drinkCommentUpdateDto.getComment_id(),drinkCommentUpdateDto.getMember_name(),drinkCommentUpdateDto.getDescription(),member_id));
+        publisher.publishEvent(new DrinkCommentUpdateDto(drinkCommentUpdateDto.comment_id(),drinkCommentUpdateDto.member_name(),drinkCommentUpdateDto.description(),member_id));
 
 
 
         return  ResponseEntity.ok(ApiResponseCreator.success("success",StateEnum.Success_Normally.getStates()));
 
     }
+
+    public ResponseEntity<ApiResponseCreator<String>> delete_comment(Long member_id,DrinkCommentUpdateDto drinkCommentUpdateDto){
+
+            drinkCommentRepository.delete_comment_id(member_id,drinkCommentUpdateDto.comment_id());
+
+
+            return ResponseEntity.ok(ApiResponseCreator.success("성공",StateEnum.Success_Normally.getStates()));
+
+
+    }
+
+
 
 }

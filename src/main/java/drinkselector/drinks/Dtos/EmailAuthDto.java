@@ -5,10 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
+/*@Data
 @AllArgsConstructor
-@NoArgsConstructor
-public class EmailAuthDto {
-    private String user_mail;
-    private String auth_code;
+@NoArgsConstructor*/
+public record EmailAuthDto(String user_mail,String auth_code) {
+    /*private String user_mail;
+    private String auth_code;*/
 }

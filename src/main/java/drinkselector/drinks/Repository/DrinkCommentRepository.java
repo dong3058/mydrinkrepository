@@ -4,6 +4,7 @@ package drinkselector.drinks.Repository;
 import drinkselector.drinks.Dtos.Show.DrinkCommentShowDto;
 import drinkselector.drinks.Entity.DrinkComment;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -20,5 +21,8 @@ public interface DrinkCommentRepository extends JpaRepository<DrinkComment,Long>
     List<DrinkCommentShowDto> Get_Drink_Comment_List(@Param("drink_id") Long drink_id);
 
 
+    @Modifying
+    @Query("delete from DrinkComment d where d.member.member_id=:member_id and d.comment_id=:comment_id ")
+    void delete_comment_id(@Param("member_id") Long member_id,@Param("comment_id")Long comment_id);
 
 }

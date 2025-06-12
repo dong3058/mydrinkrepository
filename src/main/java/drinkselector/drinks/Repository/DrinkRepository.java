@@ -2,10 +2,10 @@ package drinkselector.drinks.Repository;
 
 import drinkselector.drinks.Dtos.DrinkDto;
 import drinkselector.drinks.Dtos.Show.DrinkSearchShowDto;
-import drinkselector.drinks.Dtos.Show.DrinkTextShowDto;
+
 import drinkselector.drinks.Entity.Drinks;
 import drinkselector.drinks.Etcs.Enums.DrinkType;
-import org.springframework.data.domain.Page;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

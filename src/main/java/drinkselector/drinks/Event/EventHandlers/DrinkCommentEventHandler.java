@@ -28,12 +28,12 @@ public class DrinkCommentEventHandler {
     @Async
     @EventListener(DrinkCommentSaveEvent.class)
     public void drink_comment_save_event(DrinkCommentSaveEvent drinkCommentEvent){
-        Optional<Member> member=memberRepository.findById(drinkCommentEvent.getMember_id());
+        Optional<Member> member=memberRepository.findById(drinkCommentEvent.member_id());
 
-        Optional<Drinks> drink=drinkRepository.findById(drinkCommentEvent.getDrink_id());
+        Optional<Drinks> drink=drinkRepository.findById(drinkCommentEvent.drink_id());
 
 
-        String description= TxtFilter.file_txt_filter(drinkCommentEvent.getDescription());
+        String description= TxtFilter.file_txt_filter(drinkCommentEvent.description());
         DrinkComment drinkComment=new DrinkComment(drink.get(),description,member.get());
 
 
@@ -47,13 +47,13 @@ public class DrinkCommentEventHandler {
     @EventListener(DrinkCommentUpdateDto.class)
     public void drink_comment_update_event(DrinkCommentUpdateDto drinkCommentUpdateDto){
 
-        Optional<Member> member=memberRepository.findById(drinkCommentUpdateDto.getMember_id());
+        Optional<Member> member=memberRepository.findById(drinkCommentUpdateDto.member_id());
 
-        Optional<DrinkComment> drinkComment=drinkCommentRepository.findById(drinkCommentUpdateDto.getComment_id());
+        Optional<DrinkComment> drinkComment=drinkCommentRepository.findById(drinkCommentUpdateDto.comment_id());
 
 
-        if(member.get().getMember_mail().equals(drinkCommentUpdateDto.getMember_name())){
-            String description= TxtFilter.file_txt_filter(drinkCommentUpdateDto.getDescription());
+        if(member.get().getMember_mail().equals(drinkCommentUpdateDto.member_name())){
+            String description= TxtFilter.file_txt_filter(drinkCommentUpdateDto.description());
 
             drinkComment.get().setComment_description(description);
             drinkCommentRepository.save(drinkComment.get());

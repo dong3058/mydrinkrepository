@@ -8,9 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 
-@Data
-@AllArgsConstructor
-public class DrinkUpdateEvent {
-    private Long drink_id;
-    private String user_description;
+
+public record DrinkUpdateEvent(Long drink_id,String user_description) {
+
 }

@@ -36,7 +36,7 @@ public class UserAdminInterceptors implements HandlerInterceptor {
 
             JwtDataList jwtDataList=jwtCreators.Get_Data_From_Token(access_token);
 
-            Long member_id=jwtDataList.getMember_id();
+            Long member_id=jwtDataList.member_id();
             Optional<Member> member=memberRepository.findById(member_id);
 
            if(member.isPresent()){

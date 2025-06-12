@@ -26,11 +26,11 @@ public class RecentSearchLongEventHandler {
     @EventListener(RecentSearchLogEvent.class)
     public void add_search_log(RecentSearchLogEvent recentSearchLogEvent){
 
-        if(recentSearchLogEvent.getMember_id()==null){
-        redisUtills.real_time_search_log(recentSearchLogEvent.getDrink_id(),recentSearchLogEvent.getDrink_name());}
+        if(recentSearchLogEvent.member_id()==null){
+        redisUtills.real_time_search_log(recentSearchLogEvent.drink_id(),recentSearchLogEvent.drink_name());}
         else{
 
-            redisUtills.update_recent_search_log(recentSearchLogEvent.getMember_id(),recentSearchLogEvent.getDrink_id(),recentSearchLogEvent.getDrink_name());
+            redisUtills.update_recent_search_log(recentSearchLogEvent.member_id(),recentSearchLogEvent.drink_id(),recentSearchLogEvent.drink_name());
         }
     }
     @EventListener(GetRecentSearchLongEvent.class)

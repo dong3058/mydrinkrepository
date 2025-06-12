@@ -33,12 +33,12 @@ public class DrinkUpdateEventHandler {
 
 
 
-        String description=drinkDescriptionService.Filtering_Text(drinkUploadEvent.getUser_description());
+        String description=drinkDescriptionService.Filtering_Text(drinkUploadEvent.user_description());
 
-        Optional<Member> member=memberRepository.findById(drinkUploadEvent.getMember_id());
+        Optional<Member> member=memberRepository.findById(drinkUploadEvent.member_id());
 
 
-        DrinkDescription drinkDescription=new DrinkDescription(description,drinkUploadEvent.getDrink(),member.get());
+        DrinkDescription drinkDescription=new DrinkDescription(description,drinkUploadEvent.drink(),member.get());
         log.info("save전까지 잘왓음");
         drinkDescriptionService.Save_Drink_Description(drinkDescription);
 
@@ -50,9 +50,9 @@ public class DrinkUpdateEventHandler {
     @EventListener(DrinkUpdateEvent.class)
     public void Drink_Update_Event(DrinkUpdateEvent drinkUpdateEvent){
 
-        String description=drinkDescriptionService.Filtering_Text(drinkUpdateEvent.getUser_description());
+        String description=drinkDescriptionService.Filtering_Text(drinkUpdateEvent.user_description());
 
-        drinkDescriptionService.Update_Drink_Description(drinkUpdateEvent.getDrink_id(),description);
+        drinkDescriptionService.Update_Drink_Description(drinkUpdateEvent.drink_id(),description);
 
 
     }

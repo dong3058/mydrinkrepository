@@ -53,7 +53,7 @@ public class DrinkService {
 
         //같은이름 문서 처리에있어서 어떻게 해야될지 고민좀해야될거같은대
 
-        Drinks drinks=new Drinks(DrinkType.valueOf(userMadeDescriptionDto.getDrink_type()),userMadeDescriptionDto.getDrink_name());
+        Drinks drinks=new Drinks(DrinkType.valueOf(userMadeDescriptionDto.drink_type()),userMadeDescriptionDto.drink_name());
         LocalDateTime now=LocalDateTime.now();
         drinks.setSign_in_date(now);
         drinks.setUpdate_date(now);
@@ -61,7 +61,7 @@ public class DrinkService {
 
 
 
-        publisher.publishEvent(new DrinkUploadEvent(member_id,drinks,userMadeDescriptionDto.getDescription()));
+        publisher.publishEvent(new DrinkUploadEvent(member_id,drinks,userMadeDescriptionDto.description()));
 
 
 
@@ -74,7 +74,7 @@ public class DrinkService {
 
     public ResponseEntity<ApiResponseCreator<String>> Update_Drink_Info(DrinkUpdateDto drinkUpdateDto, Long drink_id) {
 
-        publisher.publishEvent(new DrinkUpdateEvent(drink_id, drinkUpdateDto.getDescription()));
+        publisher.publishEvent(new DrinkUpdateEvent(drink_id, drinkUpdateDto.description()));
 
         return ResponseEntity.ok(ApiResponseCreator.success("success",StateEnum.Success_Normally.getStates()));
 
@@ -109,15 +109,16 @@ public class DrinkService {
            if(member_id!=null){
                publisher.publishEvent(new RecentSearchLogEvent(member_id,drink_id,drink_name));
 
-               Long size= redisUtills.RedisOpsSetStructureGetSizeOperation(String.valueOf(drink_id));
 
-               drinkDto.get().setLike_number(size);
+
+
 
            }
            else{
                publisher.publishEvent(new RecentSearchLogEvent(null,drink_id,drink_name));
            }
-
+           Long size= redisUtills.RedisOpsSetStructureGetSizeOperation(String.valueOf(drink_id));
+           drinkDto.get().setLike_number(size);
 
        return ResponseEntity.ok(ApiResponseCreator.success(drinkDto.get(),StateEnum.Success_Normally.getStates()));}
 

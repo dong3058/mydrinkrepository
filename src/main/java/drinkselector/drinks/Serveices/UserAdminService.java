@@ -12,7 +12,7 @@ import drinkselector.drinks.Etcs.ApiResponseCreator;
 import drinkselector.drinks.Etcs.Enums.StateEnum;
 import drinkselector.drinks.Etcs.Enums.UserAdmin;
 import drinkselector.drinks.Event.Events.UserAdminEvent.UserAdminChangeEvent;
-import drinkselector.drinks.Event.Events.UserAdminEvent.UserAdminEvent;
+
 import drinkselector.drinks.Event.Events.UserAdminEvent.UserAdminGetInfoEvent;
 import drinkselector.drinks.Repository.DrinkCommentRepository;
 import lombok.RequiredArgsConstructor;

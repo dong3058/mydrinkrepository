@@ -3,6 +3,7 @@ package drinkselector.drinks.Event.EventHandlers;
 
 import drinkselector.drinks.Dtos.EmailAuthDto;
 import drinkselector.drinks.Etcs.RedisUtill.RedisUtills;
+import drinkselector.drinks.Event.Events.EmailAuthEvent;
 import drinkselector.drinks.Event.Events.LoginSecurityEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,13 +24,13 @@ public class LoginSecurityEventHandler {
 
     @EventListener(LoginSecurityEvent.class)
     public void SecurityLoginCheck(LoginSecurityEvent loginSecurityEvent){
-        String ip = loginSecurityEvent.getIp();
-        String mail = loginSecurityEvent.getMail();
+        String ip = loginSecurityEvent.ip();
+        String mail = loginSecurityEvent.mail();
         log.info("보안설정:{}",redisUtills.Check_Security_Login_Require(ip,mail));
         if(redisUtills.Check_Security_Login_Require(ip,mail)){
             log.info("보안설정에걸림");
             String uuid= UUID.randomUUID().toString();
-            eventPublisher.publishEvent(new EmailAuthDto(mail,uuid));
+            eventPublisher.publishEvent(new EmailAuthEvent(mail,uuid));
             throw new RuntimeException("로그인 보안설정에 걸림");
         }
         else{

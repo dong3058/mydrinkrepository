@@ -8,10 +8,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@Data
-@AllArgsConstructor
-public class DrinkUploadEvent {
-    private Long member_id;
-    private Drinks drink;
-    private String user_description;
+
+public record DrinkUploadEvent(Long member_id,Drinks drink,String user_description) {
 }

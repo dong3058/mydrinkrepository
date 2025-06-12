@@ -92,11 +92,11 @@ public class KakaoOauth2Solution implements Oauth2Solution {
 
         if(response.getStatusCode().value()==200){
             KakaoUserDataDto kakaoUserDataDto=response.getBody();
-            log.info("usermail:{}",kakaoUserDataDto.getEmail());
-            Optional<Member> member=memberRepository.Check_User_Exist(kakaoUserDataDto.getEmail());
+            log.info("usermail:{}",kakaoUserDataDto.email());
+            Optional<Member> member=memberRepository.Check_User_Exist(kakaoUserDataDto.email());
             if(member.isEmpty()) {
 
-                Member member1 = new Member(kakaoUserDataDto.getEmail(), "", UserAdmin.ROLE_User, MemberPlatForm.Kakao);
+                Member member1 = new Member(kakaoUserDataDto.email(), "", UserAdmin.ROLE_User, MemberPlatForm.Kakao);
                 LocalDateTime now = LocalDateTime.now();
                 member1.setSign_in_date(now);
                 member1.setUpdate_date(now);

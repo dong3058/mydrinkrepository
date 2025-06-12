@@ -67,7 +67,7 @@ public class CookieFilter extends OncePerRequestFilter {
         try{
             JwtDataList jwtDataList=jwtCreators.Get_Data_From_Token(access_token);
             log.info("data:{}",jwtDataList);
-            Authentication jwtauth=new JwtMemberAuth(jwtDataList.getMember_id(),List.of(new SimpleGrantedAuthority(jwtDataList.getUser_admin())));
+            Authentication jwtauth=new JwtMemberAuth(jwtDataList.member_id(),List.of(new SimpleGrantedAuthority(jwtDataList.user_admin())));
             log.info("jwtauth:{}",jwtauth.getAuthorities());
             log.info("jwtauth:{}",jwtauth.getPrincipal());
             SecurityContextHolder.getContext().setAuthentication(jwtauth);

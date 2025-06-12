@@ -5,13 +5,9 @@ import drinkselector.drinks.Etcs.Enums.Oauth2Enum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-@Data
-@AllArgsConstructor
-public class Oauth2LogOutEvent {
 
-    private String access_code;
+public record Oauth2LogOutEvent(String access_code,Oauth2Enum oauth2Enum) {
 
-    private Oauth2Enum oauth2Enum;
 
 
 }

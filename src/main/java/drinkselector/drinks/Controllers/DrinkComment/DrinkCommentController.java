@@ -27,4 +27,7 @@ public interface DrinkCommentController {
     ResponseEntity<ApiResponseCreator<String>> update_comment(Long member_id, DrinkCommentUpdateDto drinkCommentUpdateDto);
 
 
+    @Operation(summary = "댓글 삭제 기능")
+    ResponseEntity<ApiResponseCreator<String>> delete_comment(Long member_id,DrinkCommentUpdateDto drinkCommentUpdateDto);
+
 }

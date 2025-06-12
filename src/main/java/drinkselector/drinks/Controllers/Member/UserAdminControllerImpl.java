@@ -30,7 +30,7 @@ public class UserAdminControllerImpl implements UserAdminController{
     @PostMapping("/admin/show/member_data")
     @Override
     public ResponseEntity<ApiResponseCreator<MemberInfoDto>> Show_Member_Data(@RequestBody  MemberDto memberDto) {
-        return userAdminService.Get_Member_Info(memberDto.getMember_mail());
+        return userAdminService.Get_Member_Info(memberDto.member_mail());
     }
 
     @GetMapping("/admin/log/{member_id}")
@@ -45,7 +45,7 @@ public class UserAdminControllerImpl implements UserAdminController{
     public ResponseEntity<ApiResponseCreator<String>> Change_User(@LoginUser Long member_id,@RequestBody MemberInfoDto memberInfoDto) {
 
 
-        log.info("data:{}",memberInfoDto.getUserAdmin());
-        return userAdminService.Change_Member_Admin(member_id,memberInfoDto.getUserAdmin());
+
+        return userAdminService.Change_Member_Admin(member_id,memberInfoDto.userAdmin());
     }
 }

@@ -5,6 +5,7 @@ import drinkselector.drinks.Dtos.EmailAuthDto;
 import drinkselector.drinks.Etcs.ApiResponseCreator;
 import drinkselector.drinks.Etcs.Enums.StateEnum;
 import drinkselector.drinks.Etcs.RedisUtill.RedisUtills;
+import drinkselector.drinks.Event.Events.EmailAuthEvent;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,13 +36,13 @@ public class EmailAuthSendEvent {
     private String sender;
     @Async
 
-    @EventListener(EmailAuthDto.class)
-    public void MailAuthCodeSendEvent(EmailAuthDto emailAuthDto){
+    @EventListener(EmailAuthEvent.class)
+    public void MailAuthCodeSendEvent(EmailAuthEvent emailAuthEvent){
 
 
         MimeMessage message=javaMailSender.createMimeMessage();
-        String auth_code=emailAuthDto.getAuth_code();
-        String user_email=emailAuthDto.getUser_mail();
+        String auth_code=emailAuthEvent.auth_code();
+        String user_email=emailAuthEvent.user_mail();
 
 
 

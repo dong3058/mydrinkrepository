@@ -5,10 +5,10 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-@Data
-@NoArgsConstructor
-public class KakaoUserDataDto {
-    private String sub;
+/*@Data
+@NoArgsConstructor*/
+public record KakaoUserDataDto(String sub,String email) {
+    /*private String sub;
 
-    private String email;
+    private String email;*/
 }

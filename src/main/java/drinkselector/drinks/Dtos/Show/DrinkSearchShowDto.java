@@ -5,21 +5,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class DrinkSearchShowDto {
+
+public record DrinkSearchShowDto(Long drink_id,String drink_name,String thumb_path) {
 
 
-    private Long drink_id;
+    public DrinkSearchShowDto(Long drink_id,String drink_name){
 
-    private String drink_name;
-
-    private String thumb_path;
+        this(drink_id,drink_name,null);
 
 
-    public DrinkSearchShowDto(Long drink_id, String drink_name) {
-        this.drink_id = drink_id;
-        this.drink_name = drink_name;
     }
+
 }

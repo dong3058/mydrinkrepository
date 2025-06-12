@@ -26,21 +26,21 @@ public class MemberControllerImpl implements MemberController {
     @Override
     public ResponseEntity<ApiResponseCreator<String>> Member_Sign_In(@RequestBody MemberDto memberDto,HttpServletRequest request) {
 
-        return memberServices.Member_Assign(memberDto.getMember_mail(),memberDto.getPassword(),request.getRemoteAddr());
+        return memberServices.Member_Assign(memberDto.member_mail(),memberDto.password(),request.getRemoteAddr());
     }
 
 
     @PostMapping("/member/exist")
     @Override
     public ResponseEntity<ApiResponseCreator<String>> Check_Id_Exist(@RequestBody MemberDto memberDto) {
-        return memberServices.Id_Exist_Check(memberDto.getMember_mail());
+        return memberServices.Id_Exist_Check(memberDto.member_mail());
     }
 
 
     @PostMapping("/member/login")
     @Override
     public ResponseEntity<ApiResponseCreator<String>> Member_Login(@RequestBody MemberDto memberDto, HttpServletRequest request) {
-        return memberServices.Member_Login(memberDto.getMember_mail(),memberDto.getPassword(),request.getRemoteAddr());
+        return memberServices.Member_Login(memberDto.member_mail(),memberDto.password(),request.getRemoteAddr());
     }
 
 
@@ -49,7 +49,7 @@ public class MemberControllerImpl implements MemberController {
     @PostMapping("/member/change")
     public ResponseEntity<ApiResponseCreator<String>> Member_Change_Passowrd(@LoginUser Long member_id, @RequestBody MemberDto memberDto) {
         log.info("member_id:{}",member_id);
-        return memberServices.Update_Member_Password(member_id,memberDto.getPassword());
+        return memberServices.Update_Member_Password(member_id,memberDto.password());
     }
 
     @PostMapping("/member/logout")
