@@ -29,7 +29,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Component
 @Slf4j
-public class Oauth2Filter extends OncePerRequestFilter {
+public class Oauth2Filter /*extends OncePerRequestFilter*/ {
 
 
     private final ApplicationEventPublisher publisher;
@@ -40,9 +40,10 @@ public class Oauth2Filter extends OncePerRequestFilter {
     private final AuthenticationManager authenticationManager;
     private final List<String> oauth2_redirect_url= List.of(Oauth2Enum.Kakao.getRedirect_url());
 
-    @Override
+    /*@Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String url=request.getServletPath();
+
         return !oauth2_redirect_url.stream().anyMatch(pattern->pattern.contains(url));
     }
 
@@ -79,5 +80,5 @@ public class Oauth2Filter extends OncePerRequestFilter {
         }
         //response.sendRedirect("http://localhost:3000/home");
 
-    }
+    }*/
 }

@@ -1,4 +1,28 @@
 spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: aad9fffaff5b6655b991487c5ff8b445
+            client-secret: 37LPXBI0nSPFU8bulkKESIb9aUXHIWQu
+            redirect-uri: http://localhost:8080/login/oauth2/code/kakao
+            authorization-grant-type: authorization_code
+            client-authorization-method: client_secret_post
+            client-name: kakao
+            scope:
+              - profile_nickname
+              - profile_image
+              - account_email
+
+
+
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-url: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
   application:
     name: drinks
   jackson:

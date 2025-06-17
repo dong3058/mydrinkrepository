@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
+
 public class Oauth2DetailService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
