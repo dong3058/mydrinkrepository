@@ -21,7 +21,7 @@ public class AuthManager {
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
         authenticationManagerBuilder.authenticationProvider(memberLoginProvider);
-        authenticationManagerBuilder.authenticationProvider(oauth2AuthProvider);
+        //authenticationManagerBuilder.authenticationProvider(oauth2AuthProvider);
         return authenticationManagerBuilder.build();
     }
 }

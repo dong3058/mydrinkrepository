@@ -2,6 +2,7 @@ package drinkselector.drinks.Configs;
 
 
 import drinkselector.drinks.security.AccessDenied;
+import drinkselector.drinks.security.CustomUserService;
 import drinkselector.drinks.security.EntryPointHandler;
 
 
@@ -15,6 +16,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -39,21 +41,21 @@ public class SecurityConfig {
     private final CookieFilter cookieFilter;
     private final Oauth2Filter oauth2Filter;
     private final AuthenticationManager authenticationManager;
-
-
+    private final CustomUserService customUserService;
 
 
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
-
         http.csrf(x->x.disable())
                 .cors(cors->cors.configurationSource(corsConfigurationSource()))
+                .formLogin(FormLoginConfigurer::disable)
                 .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex->ex.accessDeniedHandler(accessDenied)
                 .authenticationEntryPoint(entryPointHandler))
                 .authenticationManager(authenticationManager)
                 .authorizeHttpRequests(auth->auth
+                        .requestMatchers("/login/oauth2/**","/oauth2/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("Admin")
                         .requestMatchers( "/user_find/**", "/comment/save/**","/comment/update/**" ,"/member/change")
                         .hasAnyRole("Admin","User")
@@ -61,8 +63,11 @@ public class SecurityConfig {
                         .hasRole("Admin")
                         .anyRequest().permitAll())
                 .addFilterAt(initLoginFilter, BasicAuthenticationFilter.class)
-                .addFilterAfter(cookieFilter,BasicAuthenticationFilter.class)
-                .addFilterAfter(oauth2Filter,BasicAuthenticationFilter.class);
+                .addFilterAfter(cookieFilter,BasicAuthenticationFilter.class);
+                //.addFilterAfter(oauth2Filter,BasicAuthenticationFilter.class);
+        http.oauth2Login(oauth2 -> oauth2
+                .userInfoEndpoint(userInfo -> userInfo.userService(customUserService))
+        );
         return http.build();
     }
 
